@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="css/main.css" />
+<style>
+body{overflow-y:hidden;}
+div.panel{background:#fff;margin:auto;}
+</style>
+</head>
+<body>
+<div class="panel">
+	<div class="hdr">
+		<h3>NJIT Course Schedule Builder For Students
+		<br/>Who Can't Read Good
+		and Want To Learn To Do Other Stuff Good Too</h3>
+	</div>
+	<div class="bdy">
+First, a couple of points:
+<ol>
+<li>This site is not officially endorsed or supported by NJIT, or anybody for that matter, including myself.</li>
+<li>This site has been tested against FF3+, Chrome 525+, Opera 10+, IE8*, and IE9*</li>
+<li>Schedule persists until the session times out or you close the browser.</li>
+</ol>
+<sup><em>* IE8 and IE9 have been minimally tested. Just enough to know most things work.</em></sup>
+<br/>
+<sup><em>** UI inconsistencies in IE7 (missing borders, stuck loading icon, etc...).</em></sup>
+<hr/>
+<strong>How do I use this?</strong>
+<p>Basic overview on how to use this tool:</p>
+<p>
+To the right is an input box. Enter courses there (e.g., CS341). There is no
+course list or anything remotely similar. If you don't know what classes you want to take,
+look at the catalog. If you can't remember the numbers, look at the catalog.
+</p>
+<p>
+You can also search by starting the term with @ (e.g., '@FOUND OF COMPUTER').
+</p>
+<p>
+After a course has been selected, it gets added into the panel below the search box. A table
+of all available sections is shown for each course (the only information shown is the section number,
+instructor, and a comment icon, if there are any).
+Selecting a particular section will add that section to the time grid.
+</p>
+<strong>HELP... printing doesn't show all the days.</strong>
+<p>
+The resolution on your monitor is likely too high. Decrease the width of the window then go to <em>Print Preview</em>.
+</p>
+<p>
+<em>Update:</em> printing should work across all browsers. Click on the print icon above the grid.
+</p>
+<strong>HELP... I can't find any schedules.</strong>
+<p>
+Either there are no possible schedules (unresolvable conflicts) or there are no
+possible schedules (you have a schedule picked).
+<br/>
+The schedule finder only searches courses that have <em>NO</em> selected section.<br/>
+To remove a section, remove the entire course or remove it from the grid (hover over the event and an <span class='ui-button ui-icon ui-icon-close'></span> will magicaly appear).
+</p>
+<p>
+Sections can also be removed by clicking on the <span class="ui-button ui-widget ui-icon ui-icon-trash"></span> button above the grid,
+which will clear <em>all</em> sections.
+</p>
+<strong>HELP... I can't remove a constraint.</strong>
+<p>
+Hover over the constraint on the left-side. An X will pop-up along the top-right corner. Click it.
+</p>
+	</div>
+</div>
+</body>
+</html>

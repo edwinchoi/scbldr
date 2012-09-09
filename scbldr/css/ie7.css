@@ -1,0 +1,52 @@
+/*!
+ * Schedule builder
+ *
+ * Copyright (c) 2011, Edwin Choi
+ *
+ * Licensed under LGPL 3.0
+ * http://www.gnu.org/licenses/lgpl-3.0.txt
+ */
+
+body { overflow: hidden; }
+
+#header {
+	min-height: 16px;
+	height: 16px;
+}
+
+#sflinks { margin-top: -12px; }
+.sv-lcol-table tr td {
+	height: 1.88em;
+}
+.sv-grid-table tr td { height: 1.88em; }
+
+ul#navigation {
+	margin-left: 0;
+	z-index: 10000000;
+}
+#searchForm {
+	padding-bottom: 0;
+	margin-bottom: 0;
+}
+#searchCriteria {
+	padding-top: 2px;
+}
+
+ul#navigation a {
+	color: #000000 !important;
+}
+
+/* won't display if height is not as large as the icon */
+#criteriaGroups > ul > li {
+	color: #333333 !important;
+	min-height: 16px;
+}
+
+#dayConstraint {
+	height: 128px;
+	width: 206px;
+}
+
+.imageContainer {
+	margin: -1px;
+}

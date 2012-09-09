@@ -1,0 +1,54 @@
+Required software:
+==================
+	1. PHP 5.2+
+	2. An HTTP server (Apache, IIS, Lighttpd)
+	3. MySQL 5.0+
+
+Install steps
+=============
+	1.	From the command-line prompt, navigate to the directory containing this file.
+
+	2.	Open up the MySQL command-line client
+		a.	Type the following:
+			CREATE DATABASE scbldr;
+			
+			USE scbldr;
+			
+			SOURCE '/path/to/install-directory/tables.sql';
+			
+			INSERT INTO TERMINFO(semester, disp_name, active) VALUES("2011F", "Fall 2011", TRUE);
+			UPDATE TERMINFO SET active = TRUE WHERE semester = '2011F';
+			UPDATE TERMINFO SET active = FALSE WHERE semester <> '2011F';
+			
+			quit
+
+	3.	Next, we need to setup the DB connection script.
+		From the command-line prompt, type in the following:
+		a.	For windows:
+			ECHO ^<?php $conn = new mysqli("localhost", "$username", "$password", "$dbname"); ?^> > dbconnect.php
+		
+		b.	For Bash:
+			echo '<?php $conn = new mysqli("localhost", "$username", "$password", "$dbname"); ?>' > dbconnect.php
+
+	4.	Run the data collector.
+		From the command-line prompt, type in:
+			php _collect.php
+		
+		This will take between 10 seconds to a little over a minute to complete, depending on the machine and network.
+		If for any reason the script fails before completing, you may get an error that an update is in progress.
+		In this case, you'll need to reset the updating flag by doing the following:
+		
+		From MySQL client:
+			UPDATE TERMINFO SET updating = FALSE WHERE active = TRUE;
+	
+	5.	Map the directory to the HTTP server.
+		
+		For Apache HTTP Server, open httpd.conf and add the following:
+			
+			<Directory "/path/to/www/scbldr/">
+			    AllowOverride All
+			    Options Indexes FollowSymlinks
+			    Order allow,deny
+			    Allow from all
+			</Directory>
+			Alias /scbldr "/path/to/www/scbldr/"
