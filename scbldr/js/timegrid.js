@@ -285,7 +285,7 @@ function genTimeStrOverInterval(stime, etime, step) {
 					}
 				}
 				for (var j = 0; j < links.length; j++)
-					conf[i] = _set(conf[i], evts.indexOf(links[j]));
+					conf[i] = _set(conf[i], $.inArray(links[j], evts));
 			}
 
 			var v = 0;

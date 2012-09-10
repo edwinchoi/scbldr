@@ -30,6 +30,9 @@ define("__INTERNAL", true);
 require_once "./dbconnect.php";
 require_once "./terminfo.php";
 
+ini_set("display_errors", 1);
+ini_set("display_startup_errors", 1);
+
 date_default_timezone_set("EST");
 
 if (isset($_GET['debug']) || true) {
@@ -128,23 +131,24 @@ require(["datasvc.php?p=/"], function(result) {
 });
     </script>
 	
-	<script type="text/javascript" src="lib/json2.js"></script>
-	<script type="text/javascript" src="lib/dojo.js"></script>
-	<script type="text/javascript" src="lib/scbldr.dojo.js"></script>
-	<script type="text/javascript" src="lib/jquery-ui.js"></script>
-	<script type="text/javascript" src="lib/raphael.js"></script>
-	<script type="text/javascript" src="lib/toolbox.expose.js"></script>
-	<script type="text/javascript" src="lib/tools.overlay.js"></script>
-	<script type="text/javascript" src="lib/tools.tooltip.js"></script>
+	<script type="text/javascript" src="lib/json2.js" defer></script>
+	<script type="text/javascript" src="lib/dojo.js" defer></script>
+	<script type="text/javascript" src="lib/scbldr.dojo.js" defer></script>
+	<script type="text/javascript" src="lib/jquery-ui.js" defer></script>
+	<script type="text/javascript" src="lib/raphael.js" defer></script>
+	<script type="text/javascript" src="lib/toolbox.expose.js" defer></script>
+	<script type="text/javascript" src="lib/tools.overlay.js" defer></script>
+	<script type="text/javascript" src="lib/tools.tooltip.js" defer></script>
+	<script type="text/javascript" src="lib/underscore-1.3.3.js" defer></script>
 	
-	<script type="text/javascript" src="js/compat.js"></script>
-	<script type="text/javascript" src="js/autocomplete.js"></script>
-	<script type="text/javascript" src="js/messageport.js"></script>
-	<script type="text/javascript" src="js/worker.js"></script>
-	<script type="text/javascript" src="js/simplerpc.js"></script>
-	<script type="text/javascript" src="js/graph.js"></script>
-	<script type="text/javascript" src="js/timegrid.js"></script>
-	<script type="text/javascript" src="js/site.js"></script>
+	<script type="text/javascript" src="js/compat.js" defer></script>
+	<script type="text/javascript" src="js/autocomplete.js" defer></script>
+	<script type="text/javascript" src="js/messageport.js" defer></script>
+	<script type="text/javascript" src="js/worker.js" defer></script>
+	<script type="text/javascript" src="js/simplerpc.js" defer></script>
+	<script type="text/javascript" src="js/graph.js" defer></script>
+	<script type="text/javascript" src="js/timegrid.js" defer></script>
+	<script type="text/javascript" src="js/site.js" defer></script>
 	<?php
 	// <script type="text/javascript" src="js/scbldr.all.js" defer="defer"></script>
 	?>
@@ -165,10 +169,11 @@ Your browser is not supported... time to upgrade.
 $(document).ready(function() {
 	if ($.browser.mozilla && $.browser.version> "6") {
 		$("#browser_not_supported").html("<h2>Known issue with Firefox. Use Chrome.</h2>").show();
+		$("#page").hide();
 	}
 });
 </script>
-<div id="page" style="display:none;">
+<div id="page">
 
 	<div id="header">
 		<nav>
@@ -241,19 +246,94 @@ $(document).ready(function() {
 			</div>
 			<div id="scheduleResultView" style="display:none; width:100%; margin:0;padding:0;"></div>
 			<div id='scheduleView' style='margin: 0 auto;' class='sv-showrange sv-shownotes'>
+				<?php
+				require_once "./include/timefunc.php";
+				
+				$daynames = array("", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday");
+				$days = array(2, 3, 4, 5, 6, 7);
+				
+				$start = parsetime("08:00");
+				$end = parsetime("22:00");
+				$step = parsetime("00:30");
+				
+				$width_pct = 100.0 / count($days);
+				?>
+				<div class='sv-view sv-view-lr'>
+					<div class='sv-lcol'>
+						<table class='sv-lcol-table'>
+							<thead><tr><th class='sv-col-hdr'>&nbsp;</th></tr></thead>
+							<tbody>
+								<?php for ($t = $start; $t < $end; $t += $step * 2) { ?>
+									<tr class='even'><td class='sv-row-hdr'><span class="time-label"><?php echo timetostr($t, false); ?></span></td></tr>
+									<tr class='odd'><td class='sv-row-hdr'></td></tr>
+								<?php } ?>
+							</tbody>
+						</table>
+					</div>
+					<div class='sv-grid'>
+						<table class='sv-grid-table'>
+							<colgroup>
+								<?php foreach ($days as $day) {
+									echo "<col class='sv-body-tbl-col' style='width:$width_pct%;' />";
+								} ?>
+							</colgroup>
+							<thead>
+								<tr class='sv-grid-hdr-row'>
+									<?php
+									foreach ($days as $day) {
+										$css = "";
+										if ($day == $days[0]) {
+											$css = "sv-first-col";
+										}
+										echo "<th class='sv-grid-col sv-col-hdr sv-day-$day $css' style='width:$width_pct%;'>";
+										echo "<span class='sv-grid-col-label'>$daynames[$day]</span>";
+										echo "</th>";
+									}
+									?>
+								</tr>
+							</thead>
+							<tbody>
+								<?php
+								$rowtypes = array("even", "odd");
+								
+								$row_contents = array();
+								foreach ($days as $day) {
+									$css = "";
+									if (empty($row_contents)) {
+										$css = "sv-first-col";
+									}
+									$row_contents[] = "<td class='sv-grid-col sv-grid-cell sv-day-$day $css'></td>";
+								}
+								$row_contents = implode("", $row_contents);
+								
+								$idx = 0;
+								for ( $t = $start; $t < $end; $t += $step ) {
+									$mod = $idx % 2;
+									$t_str = timetostr($t, false);
+									echo "<tr class='sv-grid-row $rowtypes[$mod]' data-time='$t_str'>";
+									echo $row_contents;
+									echo "</tr>\n";
+									$idx += 1;
+								}
+								?>
+							</tbody>
+						</table>
+						<div class='sv-events-container'></div>
+						<div class='sv-virtual-events'><strong>Non-meeting courses</strong></div>
+					</div>
+					<div style='clear:both'></div>
+				</div>
 			</div>
 		</div>
 
-		<div class="right">
-			<form name="searchForm">
-				<div style="position:relative;">
-					<input id="submitButton" class="ui-icon ui-icon-search" type="button" name="searchButton" style="float:right;position:absolute;right:0;" />
-					<span id="loadingIcon" style="position:absolute;float:right;z-index:1;right:25px;" class="dijitContentPaneLoading"></span>
-					<input id="search_input" class="empty" type="text" name="search" value="Add course" />
-				</div>
-				<hr/>
-				<div id="course_list" class="sec-view2 course-list"></div>
-			</form>
+		<div id="input_column" class="right">
+			<div style="position:relative;">
+				<input id="submitButton" class="ui-icon ui-icon-search" type="button" name="searchButton" style="float:right;position:absolute;right:0;" />
+				<span id="loadingIcon" style="position:absolute;float:right;z-index:1;right:25px;" class="dijitContentPaneLoading"></span>
+				<input id="search_input" class="empty" type="text" name="search" value="Add course" />
+			</div>
+			<hr/>
+			<div id="course_list" class="sec-view2 course-list"></div>
 		</div>
 	</div>
 

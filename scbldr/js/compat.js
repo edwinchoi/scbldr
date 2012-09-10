@@ -90,67 +90,18 @@ function _sprintf() {
 	}
 	return s;
 }
-if (Array.prototype.indexOf === undefined)
-	Array.prototype.indexOf = function (a) {
-		for (var i = 0, N = this.length; i < N; i++)
-			if (this[i] == a)
-				return i;
-		return -1;
-	};
 
-if (Array.prototype.map === undefined)
-	Array.prototype.map = function(fun /*, thisp */) {
-		if (this === void 0 || this === null)
-			throw new TypeError();
-	
-		var t = Object(this);
-		var len = t.length >>> 0;
-		if (typeof fun !== "function")
-			throw new TypeError();
-	
-		var res = new Array(len);
-		var thisp = arguments[1];
-		for (var i = 0; i < len; i++) {
-			if (i in t)
-				res[i] = fun.call(thisp, t[i], i, t);
-		}
-	
-		return res;
-	};
-if (Array.prototype.forEach === undefined)
-	Array.prototype.forEach = function(fun /*, thisp */) {
-		if (this === void 0 || this === null)
-			throw new TypeError();
-		
-		var t = Object(this);
-		var len = t.length >>> 0;
-		if (typeof fun !== "function")
-			throw new TypeError();
-		
-		var thisp = arguments[1];
-		for (var i = 0; i < len; i++)
-			if (i in t) fun.call(thisp, t[i], i, t);
-	};
-
-if (String.prototype.trim === undefined) {
-	String.prototype.trim = function() {
-		return this.replace(/^\s+|\s+$/g, ''); 
+if (!$.values) {
+	$.values = function(o) {
+		var r = [];
+		$.each(o, function(k, v) { r.push(v); });
+		return r;
 	};
 }
-
-if (Function.prototype.bind === undefined) {
-	Function.prototype.bind = function(thisArg) {
-		var args = Array.prototype.slice.call(arguments, 1);
-		var self = this;
-		
-		function noop() {}
-		noop.prototype = this.prototype;
-		
-		function bound() {
-			var newargs = Array.prototype.slice.call(arguments, 0);
-			return self.apply(this instanceof noop ? this : (obj || {}), args.concat(newargs));
-		}
-		bound.prototype = new noop();
-		return bound;
-	}
+if (!$.keys) {
+	$.keys = function(o) {
+		var r = [];
+		$.each(o, function(k, v) { r.push(k); });
+		return r;
+	};
 }

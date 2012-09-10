@@ -104,27 +104,6 @@ function showMessage(type, message, delay) {
 	}, delay);
 }
 
-//(function() {
-/** @private */ //var __REF_PAGE = "#page";
-/** @private */ //var __REF_CONTENT = "#content";
-/** @private */ //var __REF_FILTERS = "#filters";
-/** @private */ //var __REF_SUMMARY = "#scheduleSummary";
-/** @private */ //var __REF_CREDITS = "#totalCredits";
-/** @private */ //var __REF_SCHED_VIEW = "#scheduleView";
-/** @private */ //var __REF_COURSE_TABLE = "#course_list";
-
-/*
-$(document).ready(function() {
-	__REF_PAGE = $("#page")[0];
-	__REF_CONTENT = $("#content")[0];
-	__REF_FILTERS = $("#filters")[0];
-	__REF_SUMMARY = $("#scheduleSummary")[0];
-	__REF_CREDITS = $("#totalCredits")[0];
-	__REF_SCHED_VIEW = $("#scheduleView")[0];
-	__REF_COURSE_TABLE = $("#course_list")[0];
-});
-*/
-
 function ucfirst(s) {
 	return s.charAt(0).toUpperCase() + s.substr(1);
 }
@@ -140,7 +119,7 @@ function eventPublisher(obj) {
 		if (!listeners[name])
 			listeners[name] = [];
 		var cbs = listeners[name];
-		if (cbs.indexOf(callback) == -1) {
+		if ($.inArray(callback, cbs) == -1) {
 			cbs.push(callback);
 		}
 	};
@@ -148,8 +127,9 @@ function eventPublisher(obj) {
 		if (!listeners[name])
 			return;
 		var cbs = listeners[name];
-		if (cbs.indexOf(callback) != -1) {
-			cbs.splice(cbs.indexOf(callback), 1);
+		var pos = $.inArray(callback, cbs);
+		if (pos != -1) {
+			cbs.splice(pos, 1);
 		}
 	};
 	obj.dispatchEvent = function(evt) {
@@ -215,7 +195,7 @@ Schedules = (function(undefined) {
 				if (match == null)
 					continue;
 				if (order)
-					res[order.indexOf(match[1])] = this.toString(match[1]);
+					res[$.inArray(match[1], order)] = this.toString(match[1]);
 				else
 					res.push(this.toString(match[1]));
 			}
@@ -277,7 +257,7 @@ var DataService = {
 	},
 	findMatch: function(req, cb, limit) {
 		limit = limit || 30;
-		var term = req.term.trim();
+		var term = $.trim(req.term);
 		var off = 0;
 		if (term.charAt(0) == "@") {
 			off = 1;
@@ -328,7 +308,6 @@ function requestData(p) {
 	});
 	return d.promise();
 }
-
 
 function mapData(data) {
 	if (!$.isArray(data[0])) return data;
@@ -403,6 +382,8 @@ var changeCount = 0;
 })();
 
 window.onload = function() {
+	window.onload = null;
+	
 	loadComplete
 		.done(function(data) {
 			while (data.length) {
@@ -420,7 +401,7 @@ window.onload = function() {
 			});
 			$("#scheduleView").schedule().doLayout();
 
-			$(document.forms.searchForm.search).focus();
+			$("#search_input").focus();
 			scheduleEvents.trigger("loadComplete");
 		})
 		.fail(function(error) {
@@ -458,7 +439,7 @@ var formatters = {
 			return "<td class='slot-day'>" + " UMTWRFS".charAt(n.day) +
 				"</td><td class='slot-range'>" +
 				timeToStr(n.start) + " - " + timeToStr(n.end) +
-				"</td><td class='slot-location'>" + (n.location || "").trim() + "</td>";
+				"</td><td class='slot-location'>" + $.trim(n.location || "") + "</td>";
 		}).join("</tr><tr>") + "</table>";
 	},
 	comments: function(val, cell, parent) {
@@ -527,11 +508,11 @@ function extractSectionInfo(tr) {
 	o.callnr = tr.id;
 	var tds = tr.cells;
 	o.course = $(tr).parents(".sec-table").data("course");
-	o.section = $(".sec-section", tr).text();
-	o.instructor = $(".sec-instructor", tr).text();
+	o.section = $(tr).find(".sec-section").text();
+	o.instructor = $(tr).find(".sec-instructor").text();
 	o.title = $(tr).data("title");
 	o.slots = converters.slots($(tds).filter(".sec-slots")[0]);
-	o.seats = $(".sec-seats", tr).text();
+	o.seats = $(tr).find(".sec-seats").text();
 	o.comments = converters.comments($(tds).filter(".sec-comments")[0]);
 	return o;
 };
@@ -700,13 +681,14 @@ var CourseObject = {
 		return $(this).find(".sec-table")[0].rows[index].id;
 	},
 	selectSection: function(id) {
-		$(document.forms.searchForm[this.id]).filter("[value=\"" + id + "\"]").click();
+		$("[name=\"" + this.id + "\"][value=\"" + id + "\"]").click();
 	},
 	setSelection: function(index) {
-		$(document.forms.searchForm[this.id]).eq(index).click();
+		$("[name=\"" + this.id + "\"]:eq(" + index + ")").click();
+		//$(document.forms.searchForm[this.id]).eq(index).click();
 	},
 	clearSelection: function() {
-		var sel = $(document.forms.searchForm[this.id]).filter(":checked");
+		var sel = $("[name=\"" + this.id + "\"]:checked");
 		sel.prop("checked", false);
 		return sel.val();
 	},
@@ -825,7 +807,7 @@ function serializeSlots(s) {
 
 function selectSchedule(cfg, panel) {
 	$.each(cfg, function(i, c) {
-		var elems = document.forms.searchForm[c.name];
+		var elems = $("[name=\"" + c.name + "\"]");
 		if (c.index == -1) {
 			var sel = $("#" + c.name)[0].clearSelection();
 			if (sel) {
@@ -1025,12 +1007,16 @@ function wheel(event) {
  * Initialization code. If you use your own event management code, change it as
  * required.
  */
+(function(evtName) {
+	$(window).on(evtName, wheel);
+})($.browser.mozilla && "DOMMouseScroll" || "mousewheel");
 if ($.browser.mozilla) {
 	/** DOMMouseScroll is for mozilla. */
-	window.addEventListener('DOMMouseScroll', wheel, false);
-}
+	$(window).on("DOMMouseScroll", wheel);
+} else {
 	/** IE/Opera. */
-	window.onmousewheel = wheel;
+	$(window).on("mousewheel", wheel);
+}
 
 /**
  * Show a set of schedule thumbnails
@@ -1661,14 +1647,6 @@ getActiveSchedule = function() {
 $(document).ready(function() {
 	$("#infolink").click(function() {
 		var hdr = $("#header");
-		/*
-		$("#infopanel").position({
-			of: hdr,
-			my: "center top",
-			at: "center center",
-			offset: "0 5"
-		}).show();
-		*/
         $("#infopanel").overlay({
             top: hdr.position().top + hdr.outerHeight(),
             mask: {
@@ -1707,21 +1685,11 @@ $(document).ready(function() {
 });
 $(document).ready(function() {
 	var schedacts = $("#schedactions");
-//	schedacts.detach();
-//	grid.getCanvas().append(schedacts);
 	var clearButton = schedacts.find("#clearButton");
 	clearButton.button({icons:{primary:"ui-icon-trash"}});
 	clearButton.click(function() {
 		scheduleController.clearSchedule();
 	});
-//	var pushButton = schedacts.find("#pushButton");
-//	pushButton.click(function() {
-//		scheduleStore.pushSchedule();
-//	});
-//	var popButton = schedacts.find("#popButton");
-//	popButton.click(function(){
-//		selectSchedule(scheduleStore.popSchedule());
-//	});
 	var printButton = schedacts.find("#printButton");
 	printButton.button({icons:{primary:"ui-icon-print"}});
 	{
@@ -1733,14 +1701,18 @@ $(document).ready(function() {
 });
 
 $(document).ready(function() {
-	var tt = $("#tooltip");
-	tt.data("count", {c: 0});
-	tt.bind("mouseenter", function(e) {
-		tt.stop();
-		tt.css("opacity", 1);
-	});
-	tt.bind("mouseleave", function(e) {
-		hideCourseTooltip(tt, 250);
+	$("#tooltip")
+		.data("count", { c: 0 })
+		.on({
+			mouseenter: function() {
+				$(this).stop().css("opacity", 1);
+			},
+			mouseleave: function() {
+				hideCourseTooltip($(this), 250);
+			}
+		});
+	$(window).on("unload", function() {
+		$("#tooltip").off("mouseenter mouseleave");
 	});
 });
 
@@ -1775,9 +1747,6 @@ $(document).ready(function() {
 	//var grid = new ScheduleGrid("#scheduleView", {cellWidth:110,cellHeight:24,granularity:30});
 	$("#scheduleView").schedule();
 	
-	
-	
-
 	scheduleEvents.bind("insert.course", function(ev, data, tbl) {
 		$(".sec-input input", tbl).click(function(ev) {
 			ev = window.event || ev;
@@ -1810,33 +1779,31 @@ $(document).ready(function() {
 		}, sec.slots);
 
 		if (evs.length) {
-			$(evs)
-				.bind("mouseenter", function(event) {
-					var tgt = $(event.target);
+			$(evs).on({
+				mouseenter: function(e) {
+					var tgt = $(e.target);
 					if (!tgt.hasClass("sv-event"))
 						tgt = tgt.parents(".sv-event");
-					var tt = $("#tooltip");
-					showCourseTooltip(tt, tgt, sec);
-				})
-				.bind("mouseleave", function(event) {
+					showCourseTooltip($("#tooltip"), tgt, sec);
+				},
+				mouseleave: function(e) {
 					hideCourseTooltip($("#tooltip"));
-				})
-				.find(".sv-closer").bind("click", function(e) {
-					if (e.button > 0)
-						return;
-					if ($("#tooltip").is(":visible")) {
-						hideCourseTooltip($("#tooltip"), 0);
-					}
-					var name = $(this.parentNode).attr("name");
-					Schedules.clearSelected(name);
-					$("#" + name)[0].clearSelection();
-					$("#scheduleView").schedule().remove(this.parentNode);
-					scheduleEvents.trigger("change.section", [name, -1]);
-				});
+				}
+			}).find(".sv-closer").on("click", function(e) {
+				if (e.button > 0)
+					return;
+				if ($("#tooltip").is(":visible")) {
+					hideCourseTooltip($("#tooltip"), 0);
+				}
+				var name = $(this.parentNode).attr("name");
+				Schedules.clearSelected(name);
+				$("#" + name)[0].clearSelection();
+				$("#scheduleView").schedule().remove(this.parentNode);
+				scheduleEvents.trigger("change.section", [name, -1]);
+			});
 		}
 	});
-	
-	var searchForm = document.forms.searchForm;
+
 	/**
 	 * course selection handler
 	 */
@@ -1863,10 +1830,10 @@ $(document).ready(function() {
 		return false;
 	}
 
-	$(searchForm.search).autocomplete({
-		appendTo: searchForm,
-		delay: 0,
-		autoFill: true,
+	$("#search_input").autocomplete({
+		appendTo: "#input_column",
+		delay: 10,
+		autoFocus: true,
 		position: {my:"right top", at:"right bottom"},
 		width: 220,
 		source: $.proxy(DataService, "findMatch"),
@@ -1874,10 +1841,10 @@ $(document).ready(function() {
 		disabled: true
 	});
 	require(["datasvc.php?p=/"], function() {
-		$(searchForm.search).autocomplete("option", "disabled", false);
+		$("#search_input").autocomplete("option", "disabled", false);
 	});
 
-	$(searchForm).submit(function(e) {
+	$("#search_input").click(function(e) {
 		var search = $("#search_input");
 		if (search.val() && search.val().length > 0) {
 			DataService.findMatch({term: search.value}, function(data) {
@@ -1886,6 +1853,7 @@ $(document).ready(function() {
 				search.autocomplete("close");
 			});
 		}
+		e.preventDefault();
 		return false;
 	});
 

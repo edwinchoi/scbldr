@@ -32,7 +32,7 @@
 			},
 			removeEventListener: function(name, cb, ignore) {
 				if (!listeners[name]) return;
-				listeners[name].splice(listeners[name].indexOf(cb), 1);
+				listeners[name].splice($.inArray(cb, listeners[name]), 1);
 			},
 			dispatchEvent: function(evt) {
 				var l = listeners[evt.type];
